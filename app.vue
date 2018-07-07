@@ -2,19 +2,21 @@
     <div class="daily">
         <div class="daily-menu">
             <div class="daily-menu-item"
-                :calss="{on: type==='recommend'}"
+                :class="{on: type=== 'recommend'}"
                 @click="handleToRecommend">每日推荐</div>
             <div class="daily-menu-item"
                 :class="{on: type==='daily'}"
                 @click="showThemes= !showThemes">主题日报</div>
             <ul v-show="showThemes">
                 <li v-for="item in themes" :key="item.id">
-                    <a :class="{on: item.id=== themeId &&type=== 'daily'}"
+                    <a :class="{on: item.id=== themeId && type=== 'daily'}"
                         @click="handleToTheme(item.id)">{{item.name}}</a>
                 </li>
             </ul>
         </div>
-        <div class="daily-list">
+        <div class="daily-list"
+            ref="list"
+            @scroll="handleScroll">
             <template v-if="type=== 'recommend'">
                 <div v-for="list in recommendList" :key="list.date">
                     <div class="daily-date">{{formatDay(list.date)}}</div>
@@ -40,6 +42,7 @@
 <script>
     import $ from './libs/util.js';
     import Item from './component/item.vue';
+
     export default{
         components: {Item},
         data(){
@@ -65,6 +68,15 @@
             },
             handleClick(id){
                 this.articleId= id;
+            },
+            handleScroll(){
+                const $list= this.$refs.list;
+                if(this.type=== 'daily' || this.isLoading) return;
+                if($list.scrollTop + document.body.clientHeight
+                    >= $list.scrollHeight){
+                        this.dailyTime -= 86400000;
+                        this.getRecommendList();
+                } 
             },
             getThemes(){
                 $.ajax.get('themes').then(res=> {
