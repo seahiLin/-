@@ -15,16 +15,33 @@
             </ul>
         </div>
         <div class="daily-list">
-            <Item></Item>
+            <template v-if="type=== 'recommend'">
+                <div v-for="list in recommendList" :key="list.date">
+                    <div class="daily-date">{{formatDay(list.date)}}</div>
+                    <Item 
+                        v-for="item in list.stories"
+                        :key="item.id" :data="item"
+                        @click.native="handleClick(item.id)">
+                    </Item>
+                </div>
+            </template>
+            <template v-if="type=== 'daily'">
+                <Item 
+                    v-for="item in list"
+                    :key="item.id"
+                    :data="item"
+                    @click.native="handleClick(item.id)">
+                </Item>
+           </template>
         </div>
-        <daily-article></daily-article>
     </div>
 </template>
 
 <script>
     import $ from './libs/util.js';
-
+    import Item from './component/item.vue';
     export default{
+        components: {Item},
         data(){
             return{
                 themes: [],
@@ -34,10 +51,21 @@
                 dailyTime: $.getTodayTime(),
                 isLoading: false,
                 list: [],
+                articleId: 0,
                 themeId: 0
             }
         },
         methods: {
+            formatDay(date){
+                let month= date.substr(4,2);
+                let day= date.substr(6,2);
+                if(month.substr(0,1)=== '0') month= month.substr(1,1);
+                if(day.substr(0,1)=== '0') day= day.substr(1,1);
+                return month + "月" + day + "日";
+            },
+            handleClick(id){
+                this.articleId= id;
+            },
             getThemes(){
                 $.ajax.get('themes').then(res=> {
                     this.themes= res.others;
