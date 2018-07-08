@@ -36,15 +36,17 @@
                 </Item>
            </template>
         </div>
+        <daily-article :id="articleId"></daily-article>
     </div>
 </template>
 
 <script>
     import $ from './libs/util.js';
-    import Item from './component/item.vue';
+    import Item from './components/item.vue';
+    import dailyArticle from './components/daily-article.vue';
 
     export default{
-        components: {Item},
+        components: {Item, dailyArticle},
         data(){
             return{
                 themes: [],
@@ -55,7 +57,8 @@
                 isLoading: false,
                 list: [],
                 articleId: 0,
-                themeId: 0
+                themeId: 0,
+                firstEnter: true
             }
         },
         methods: {
@@ -74,8 +77,8 @@
                 if(this.type=== 'daily' || this.isLoading) return;
                 if($list.scrollTop + document.body.clientHeight
                     >= $list.scrollHeight){
-                        this.dailyTime -= 86400000;
-                        this.getRecommendList();
+                    this.dailyTime -= 86400000;
+                    this.getRecommendList();
                 } 
             },
             getThemes(){
@@ -103,9 +106,13 @@
             },
             getRecommendList(){
                 this.isLoading= true;
-                const preDay= $.prevDay(this.dailyTime+ 86400000);
+                const preDay= $.prevDay(this.dailyTime + 86400000);
                 $.ajax.get('news/before/'+ preDay).then(res=> {
                     this.recommendList.push(res);
+                    if(this.firstEnter){
+                        this.articleId= this.recommendList[0].stories[0].id;
+                        this.firstEnter= false;
+                    };
                     this.isLoading= false;
                 })
             }
@@ -117,8 +124,3 @@
     }
 </script>
 
-<style scoped>
-    div{
-        color: blueviolet;
-    }
-</style>
